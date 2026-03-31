@@ -38,7 +38,7 @@ function validateProjectName(value) {
 /**
  * Runs the full interactive prompt sequence and returns the user's choices.
  *
- * @returns {Promise<{ projectName: string, stack: string, extras: string[] }>}
+ * @returns {Promise<{ projectName: string, stack: string, useTypescript: boolean, extras: string[] }>}
  */
 export async function collectAnswers() {
   // ── 1. Project name ──────────────────────────────────────────────────────
@@ -79,7 +79,15 @@ export async function collectAnswers() {
     })
   );
 
-  // ── 3. Extras (multi-select) ──────────────────────────────────────────────
+  // ── 3. TypeScript ─────────────────────────────────────────────────────────
+  const useTypescript = onCancel(
+    await p.confirm({
+      message: 'Use TypeScript?',
+      initialValue: true,
+    })
+  );
+
+  // ── 4. Extras (multi-select) ──────────────────────────────────────────────
   // Tailwind CSS is only available for frontend stacks
   const isFrontend = stack === 'nextjs' || stack === 'vite';
 
@@ -126,6 +134,7 @@ export async function collectAnswers() {
   return {
     projectName: projectName.trim(),
     stack,
+    useTypescript,
     extras: Array.isArray(extras) ? extras : [],
   };
 }

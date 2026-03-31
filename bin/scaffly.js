@@ -70,7 +70,7 @@ async function main() {
   );
 
   // ── Step 1: Collect answers ───────────────────────────────────────────────
-  const { projectName, stack, extras } = await collectAnswers();
+  const { projectName, stack, useTypescript, extras } = await collectAnswers();
 
   const projectPath = path.resolve(process.cwd(), projectName);
 
@@ -88,7 +88,7 @@ async function main() {
   s.start(`Scaffolding ${chalk.cyan(STACK_LABELS[stack])} project...`);
 
   try {
-    await GENERATORS[stack](projectName, projectPath);
+    await GENERATORS[stack](projectName, projectPath, useTypescript);
   } catch (err) {
     s.stop(chalk.red('Failed to scaffold project'));
     p.cancel(`Generator error: ${err.message}`);
@@ -100,7 +100,7 @@ async function main() {
     s.message(`Applying ${chalk.cyan(extra)}...`);
 
     try {
-      await EXTRAS[extra](projectPath, stack);
+      await EXTRAS[extra](projectPath, stack, useTypescript);
     } catch (err) {
       // Extras are non-fatal — warn and continue
       s.message(chalk.yellow(`Warning: ${extra} could not be fully applied`));

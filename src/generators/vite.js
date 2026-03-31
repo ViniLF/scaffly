@@ -9,10 +9,14 @@ import { writeFile, writeJson, runCommand } from '../utils/index.js';
 /**
  * Generates a complete React + Vite project at the given path.
  *
- * @param {string} projectName - Used as the package name and HTML title
- * @param {string} projectPath - Absolute path where the project will be created
+ * @param {string}  projectName   - Used as the package name and HTML title
+ * @param {string}  projectPath   - Absolute path where the project will be created
+ * @param {boolean} useTypescript - Whether to scaffold TypeScript files
  */
-export async function generate(projectName, projectPath) {
+export async function generate(projectName, projectPath, useTypescript = false) {
+  const ext = useTypescript ? 'tsx' : 'jsx';
+  const configExt = useTypescript ? 'ts' : 'js';
+
   // ── package.json ───────────────────────────────────────────────────────────
   await writeJson(path.join(projectPath, 'package.json'), {
     name: projectName,
@@ -21,7 +25,7 @@ export async function generate(projectName, projectPath) {
     private: true,
     scripts: {
       dev: 'vite',
-      build: 'vite build',
+      build: useTypescript ? 'tsc && vite build' : 'vite build',
       preview: 'vite preview',
     },
     dependencies: {
@@ -31,12 +35,17 @@ export async function generate(projectName, projectPath) {
     devDependencies: {
       '@vitejs/plugin-react': '^4.3.1',
       vite: '^5.3.4',
+      ...(useTypescript && {
+        typescript: '^5.5.3',
+        '@types/react': '^18.3.3',
+        '@types/react-dom': '^18.3.0',
+      }),
     },
   });
 
-  // ── vite.config.js ────────────────────────────────────────────────────────
+  // ── vite.config ───────────────────────────────────────────────────────────
   await writeFile(
-    path.join(projectPath, 'vite.config.js'),
+    path.join(projectPath, `vite.config.${configExt}`),
     `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -46,6 +55,43 @@ export default defineConfig({
 });
 `
   );
+
+  // ── tsconfig.json + tsconfig.node.json (TypeScript only) ──────────────────
+  if (useTypescript) {
+    await writeJson(path.join(projectPath, 'tsconfig.json'), {
+      compilerOptions: {
+        target: 'ES2020',
+        useDefineForClassFields: true,
+        lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+        module: 'ESNext',
+        skipLibCheck: true,
+        moduleResolution: 'bundler',
+        allowImportingTsExtensions: true,
+        resolveJsonModule: true,
+        isolatedModules: true,
+        noEmit: true,
+        jsx: 'react-jsx',
+        strict: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
+        noFallthroughCasesInSwitch: true,
+      },
+      include: ['src'],
+      references: [{ path: './tsconfig.node.json' }],
+    });
+
+    await writeJson(path.join(projectPath, 'tsconfig.node.json'), {
+      compilerOptions: {
+        composite: true,
+        skipLibCheck: true,
+        module: 'ESNext',
+        moduleResolution: 'bundler',
+        allowSyntheticDefaultImports: true,
+        strict: true,
+      },
+      include: ['vite.config.ts'],
+    });
+  }
 
   // ── index.html ────────────────────────────────────────────────────────────
   await writeFile(
@@ -59,16 +105,28 @@ export default defineConfig({
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.${ext}"></script>
   </body>
 </html>
 `
   );
 
-  // ── src/main.jsx ──────────────────────────────────────────────────────────
+  // ── src/main ──────────────────────────────────────────────────────────────
   await writeFile(
-    path.join(projectPath, 'src/main.jsx'),
-    `import { StrictMode } from 'react';
+    path.join(projectPath, `src/main.${ext}`),
+    useTypescript
+      ? `import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App.tsx';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+`
+      : `import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
@@ -81,9 +139,9 @@ createRoot(document.getElementById('root')).render(
 `
   );
 
-  // ── src/App.jsx ───────────────────────────────────────────────────────────
+  // ── src/App ───────────────────────────────────────────────────────────────
   await writeFile(
-    path.join(projectPath, 'src/App.jsx'),
+    path.join(projectPath, `src/App.${ext}`),
     `import './App.css';
 
 function App() {

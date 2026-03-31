@@ -13,10 +13,11 @@ import { writeFile, updatePackageJson, runCommand } from '../utils/index.js';
 /**
  * Applies Husky + lint-staged configuration to the project.
  *
- * @param {string} projectPath - Absolute path to the project root
- * @param {string} stack       - Selected stack identifier (unused but kept for API consistency)
+ * @param {string}  projectPath   - Absolute path to the project root
+ * @param {string}  stack         - Selected stack identifier (unused but kept for API consistency)
+ * @param {boolean} useTypescript - Whether to configure lint-staged for TypeScript files
  */
-export async function apply(projectPath, stack) {
+export async function apply(projectPath, stack, useTypescript = false) {
   // ── Install packages ──────────────────────────────────────────────────────
   await runCommand(
     'npm',
@@ -33,8 +34,11 @@ export async function apply(projectPath, stack) {
   // husky init already adds "prepare": "husky"; we add lint-staged config here.
   await updatePackageJson(projectPath, {
     'lint-staged': {
-      // JS/JSX files: lint then format
-      '*.{js,jsx}': ['eslint --fix --max-warnings 0', 'prettier --write'],
+      // Source files: lint then format
+      [useTypescript ? '*.{ts,tsx}' : '*.{js,jsx}']: [
+        'eslint --fix --max-warnings 0',
+        'prettier --write',
+      ],
       // Other files: format only
       '*.{json,md,css,html}': ['prettier --write'],
     },
