@@ -1,9 +1,9 @@
 # Scaffly
 
-[![npm version](https://img.shields.io/npm/v/scaffly.svg?style=flat-square)](https://www.npmjs.com/package/scaffly)
+[![npm version](https://img.shields.io/npm/v/scaffly-cli.svg?style=flat-square)](https://www.npmjs.com/package/scaffly-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/ViniLF/scaffly?style=flat-square)](https://github.com/ViniLF/scaffly/stargazers)
-[![Node.js Version](https://img.shields.io/node/v/scaffly.svg?style=flat-square)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/node/v/scaffly-cli.svg?style=flat-square)](https://nodejs.org)
 
 > A fast, interactive CLI tool for scaffolding modern web and Node.js projects.
 
@@ -30,7 +30,7 @@ npx scaffly
 Or install globally for repeated use:
 
 ```bash
-npm install -g scaffly
+npm install -g scaffly-cli
 scaffly
 ```
 

@@ -1,5 +1,5 @@
 {
-  "name": "scaffly",
+  "name": "scaffly-cli",
   "version": "1.0.0",
   "description": "A fast, interactive CLI tool for scaffolding modern web and Node.js projects",
   "type": "module",
